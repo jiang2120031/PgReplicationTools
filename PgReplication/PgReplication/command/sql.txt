@@ -1,0 +1,26 @@
+﻿select dblink_connect('connection','host=localhost port=5432 dbname=EvvTest user=postgres password=123456');
+select * from dblink('connection','select * from mt_doc_lookupitem')  as t1(id varchar);
+SELECT dblink_disconnect('connection');
+
+CREATE TABLE public.mt_doc_test
+as 
+select * from mt_doc_lookupitem limit 0;
+
+drop table mt_doc_test;
+
+create table public.mt_doc_test
+(like
+mt_doc_lookupitem INCLUDING INDEXES);
+
+
+SELECT pg_type.typname as typename,a.attname as name, a.attnotnull as notnull
+FROM pg_class as c join pg_attribute as a on a.attrelid = c.oid join pg_type on pg_type.oid = a.atttypid 
+where c.relname = 'mt_doc_lookupitem' and a.attnum>0;
+
+
+select pg_constraint.contype,pg_attribute.attname as colname,pg_constraint.conname as pk_name from 
+pg_constraint  inner join pg_class 
+on pg_constraint.conrelid = pg_class.oid 
+inner join pg_attribute on pg_attribute.attrelid = pg_class.oid 
+and  pg_attribute.attnum = pg_constraint.conkey[1]
+where pg_class.relname = 'mt_doc_lookupitem' ;
