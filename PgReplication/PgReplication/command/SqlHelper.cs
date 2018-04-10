@@ -47,6 +47,7 @@ namespace PgReplication.command
                     {
                         n = -1;
                         transaction.Rollback();
+                        throw;
                     }
                 }
             }

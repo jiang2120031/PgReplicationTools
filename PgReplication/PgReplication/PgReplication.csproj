@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="command\Kernel.cs" />
+    <Compile Include="command\Log.cs" />
     <Compile Include="command\SqlHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -36,7 +36,7 @@ namespace PgReplication
                 }
                 catch (Exception ex)
                 {
-                    throw;
+                    Log.WriteLog($@"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} ERROR:{ex.Message}   {ex.StackTrace}");
                 }
             }
         }
