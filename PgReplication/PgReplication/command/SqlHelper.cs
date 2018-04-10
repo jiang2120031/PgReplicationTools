@@ -33,12 +33,12 @@ namespace PgReplication.command
             var n = 0;
             using (var con = new NpgsqlConnection(sqlConnection))
             {
+                con.Open();
                 var transaction = con.BeginTransaction();
                 using (var cmd = new NpgsqlCommand(sql, con, transaction))
                 {
                     try
                     {
-                        con.Open();
                         cmd.Parameters.AddRange(sqlparam);
                         n = cmd.ExecuteNonQuery();
                         transaction.Commit();

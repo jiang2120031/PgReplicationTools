@@ -1,6 +1,10 @@
-﻿select dblink_connect('connection','host=localhost port=5432 dbname=EvvTest user=postgres password=123456');
+﻿
+select dblink_connect('connection','host=localhost port=5432 dbname=EvvTest user=postgres password=123456');
 select * from dblink('connection','select * from mt_doc_lookupitem')  as t1(id varchar);
 SELECT dblink_disconnect('connection');
+insert into for_test select * from dblink('connection','select * from mt_doc_lookupitem limit 1')  as t1(id varchar,data jsonb,mt_last_modified timestamptz,mt_version uuid,mt_dotnet_type varchar);
+
+
 
 CREATE TABLE public.mt_doc_test
 as 
@@ -24,3 +28,5 @@ on pg_constraint.conrelid = pg_class.oid
 inner join pg_attribute on pg_attribute.attrelid = pg_class.oid 
 and  pg_attribute.attnum = pg_constraint.conkey[1]
 where pg_class.relname = 'mt_doc_lookupitem' ;
+
+select count(1) from pg_extension t where t.extname='dblink'
