@@ -10,26 +10,34 @@ namespace PgReplication.command
     {
         private static readonly string dblinkfrom = ConfigurationManager.AppSettings["dblinkfrom"];
         private static readonly string dblinkto = ConfigurationManager.AppSettings["dblinkto"];
-        public void CopyToEmptyDataBase()
+        public void CopyData()
         {
             CreateDblinkExtension();
             var tables = ConfigurationManager.AppSettings["tables"];
             if (!string.IsNullOrWhiteSpace(tables))
             {
-                
                 var tableArray = tables.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 Parallel.For(0, tableArray.Length, i =>
                 {
-                    CopyTableByName(tableArray[i]);
+                    if (ExistsTable(tableArray[i]))
+                        CopyDataToExistentTable(tableArray[i]);
+                    else
+                        CopyDataToNonexistentTable(tableArray[i]);
                 });
             }
+        }
+        private bool ExistsTable(string tableName)
+        {
+            var sql = $"select count(1) from pg_tables where tablename = '{tableName}'";
+            var o = SqlHelper.ExecuteScalar(false, sql);
+            return Convert.ToInt32(o) > 0;
         }
         private void CreateDblinkExtension()
         {
             var sql = "create extension if not exists dblink";
             SqlHelper.ExecuteNonquery(false, sql);
         }
-        private void CopyTableByName(string tableName)
+        private void CopyDataToNonexistentTable(string tableName)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
@@ -93,6 +101,31 @@ namespace PgReplication.command
             //copy data
             stringBuilder.Clear();
             stringBuilder.Append($"select dblink_connect('connection','{dblinkfrom}');");
+            stringBuilder.Append($@"insert into public.{tableName} select * from dblink('connection','select * from {tableName}')
+                                as t1({tableType.ToString()});");
+            stringBuilder.Append("SELECT dblink_disconnect('connection');");
+            SqlHelper.DoTransaction(false, stringBuilder.ToString());
+            stringBuilder = null;
+        }
+        private void CopyDataToExistentTable(string tableName)
+        {
+            var stringBuilder = new StringBuilder();
+            var tableType = new StringBuilder();
+            var structure_sql = $@"SELECT a.attname, pg_type.typname, a.attnotnull
+                                FROM pg_class as c join pg_attribute as a on a.attrelid = c.oid join pg_type on pg_type.oid = a.atttypid 
+                                where c.relname = '{tableName}' and a.attnum>0";
+            var structure_table = SqlHelper.GetDataTable(true, structure_sql);
+            for (int i = 0; i < structure_table.Rows.Count; i++)
+            {
+                tableType.Append($"{structure_table.Rows[i][0].ToString()} {structure_table.Rows[i][1].ToString()}");
+                if (i != structure_table.Rows.Count - 1)
+                {
+                    tableType.Append(",");
+                }
+            }
+            stringBuilder.Append($"select dblink_connect('connection','{dblinkfrom}');");
+            stringBuilder.Append($@"delete from public.{tableName} where id in (select * from dblink('connection','select id from {tableName}') 
+                                as t1(id varchar));");
             stringBuilder.Append($@"insert into public.{tableName} select * from dblink('connection','select * from {tableName}')
                                 as t1({tableType.ToString()});");
             stringBuilder.Append("SELECT dblink_disconnect('connection');");

@@ -16,7 +16,7 @@ namespace PgReplication
             {
                 try
                 {
-                    Console.WriteLine("1---Copy to the empty database.");
+                    Console.WriteLine("1---Copy to the database.");
                     Console.Write("Enter parameters:");
                     var input = Console.ReadLine();
                     if (!string.IsNullOrWhiteSpace(input))
@@ -26,7 +26,7 @@ namespace PgReplication
                         sw.Start();
                         switch (input)
                         {
-                            case "1":new Kernel().CopyToEmptyDataBase();break;
+                            case "1": new Kernel().CopyData(); break;
                             default:
                                 break;
                         }
