@@ -22,7 +22,7 @@ namespace PgReplication
                     if (!string.IsNullOrWhiteSpace(input))
                     {
                         Stopwatch sw = new Stopwatch();
-                        Console.WriteLine("task start>");
+                        Console.WriteLine("task start");
                         sw.Start();
                         switch (input)
                         {
@@ -31,7 +31,7 @@ namespace PgReplication
                                 break;
                         }
                         sw.Stop();
-                        Console.WriteLine($"<task end,spend time:{sw.ElapsedMilliseconds}ms");
+                        Console.WriteLine($"task end,spend time:{sw.ElapsedMilliseconds}ms");
                     }
                 }
                 catch (Exception ex)

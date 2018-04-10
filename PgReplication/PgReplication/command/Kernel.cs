@@ -35,7 +35,7 @@ namespace PgReplication.command
             {
                 return;
             }
-            //创建表
+            //create table
             var structure_sql = $@"SELECT a.attname, pg_type.typname, a.attnotnull
                                 FROM pg_class as c join pg_attribute as a on a.attrelid = c.oid join pg_type on pg_type.oid = a.atttypid 
                                 where c.relname = '{tableName}' and a.attnum>0";
@@ -90,7 +90,7 @@ namespace PgReplication.command
             }
             stringBuilder.Append(@")WITH (OIDS = FALSE)");
             SqlHelper.DoTransaction(false, stringBuilder.ToString());
-            //分批添加数据
+            //copy data
             stringBuilder.Clear();
             stringBuilder.Append($"select dblink_connect('connection','{dblinkfrom}');");
             stringBuilder.Append($@"insert into public.{tableName} select * from dblink('connection','select * from {tableName}')
